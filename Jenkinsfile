@@ -90,14 +90,17 @@ pipeline {
                 branch "master"
             }
             steps {
-                input(message: 'Con que número de version se hace el release?',
-                    ok: 'Build',
-                    parameters: [
-                        string(defaultValue: ' ',
-                        description: 'Version ej: 1.0.0',
-                        name: 'RELEASE_VERSION')
-                    ]
-                )
+                timeout(time: 3, unit: 'DAYS') {
+                    input message: "release?"
+                }
+                // input(message: 'Con que número de version se hace el release?',
+                //     ok: 'Build',
+                //     parameters: [
+                //         string(defaultValue: ' ',
+                //         description: 'Version ej: 1.0.0',
+                //         name: 'RELEASE_VERSION')
+                //     ]
+                // )
                 sh "sbt release release-version $RELEASE_VERSION with-defaults"
             }
         }
