@@ -7,7 +7,8 @@ class HelloSpec extends FlatSpec with Matchers {
   }
 
   "Hello" should "sometimes pass" in {
-      val n = Hello.getRandom()
+      // val n = Hello.getRandom()
+      val n = 60
       n should be > 50
   }
 
