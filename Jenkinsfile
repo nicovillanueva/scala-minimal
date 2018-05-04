@@ -48,25 +48,13 @@ pipeline {
             steps {
                 script {
                     timeout(time: 1, unit: 'HOURS') {
-                        while(true){
-                            def qg = waitForQualityGate()
-                            echo "Found status: ${qg.status}"
-                            if (qg.status != 'OK') {
-                                error "Pipeline aborted due to quality gate failure: ${qg.status}"
-                            }
-                            sleep 5
+                        def qg = waitForQualityGate()
+                        echo "Found status: ${qg.status}"
+                        if (qg.status != 'OK') {
+                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
                         }
                     }
                 }
-                // timeout(time: 1, unit: 'HOURS') {
-                //     script {
-                //             def qualitygate = waitForQualityGate()
-                //         if (qualitygate.status != "OK") {
-                //             error "Pipeline aborted due to quality gate coverage failure: ${qualitygate.status}"
-                //         }
-                //     }
-                //     // waitForQualityGate(abortPipeline: true)
-                // }
             }
         }
 
