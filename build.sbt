@@ -35,7 +35,8 @@ sonarProperties ++= Map(
   "sonar.coverage.exclusions" -> "*.java",
   "sonar.java.binaries" -> "target/scala-2.11/classes",
   "sonar.sourceEncoding" -> "utf-8",
-  "commons.sonar.sources" -> "app"
+  "commons.sonar.sources" -> "app",
+  "sonar.webhooks.global" -> "http://jenkins.marathon.l4lb.thisdcos.directory:10101/sonarqube-webhook/"
 )
 sonarRunnerOptions := Seq("-e", "-X")
 coverageEnabled := true
