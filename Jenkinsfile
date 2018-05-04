@@ -39,12 +39,12 @@ pipeline {
         }
 
         stage('Quality gate') {
-            // when {
-            //     anyOf{
-            //         branch 'master'
-            //         branch 'develop'
-            //     }
-            // }
+            when {
+                anyOf{
+                    branch 'master'
+                    branch 'develop'
+                }
+            }
             steps {
                 script {
                     timeout(time: 1, unit: 'HOURS') {
@@ -59,16 +59,16 @@ pipeline {
         }
 
 
-        // stage('Validate PR'){
-        //     when {
-        //         changeRequest()  // bug: not working
-        //     }
-        //     steps {
-        //         // echo "[DRYRUN] fetch & merge to master"
-        //         echo "Test after merge:"
-        //         sh "sbt clean test"
-        //     }
-        // }
+        stage('Validate PR'){
+            when {
+                changeRequest()  // bug: not working
+            }
+            steps {
+                // echo "[DRYRUN] fetch & merge to master"
+                echo "Test after merge:"
+                sh "sbt clean test"
+            }
+        }
 
         stage('New snapshot'){
             when {
@@ -90,17 +90,16 @@ pipeline {
                 branch "master"
             }
             steps {
-                timeout(time: 3, unit: 'DAYS') {
-                    input message: "release?"
+                timeout(time: 1, unit: 'DAYS') {
+                    input(message: 'Con que número de version se hace el release?',
+                        ok: 'Build',
+                        parameters: [
+                            string(defaultValue: ' ',
+                            description: 'Version ej: 1.0.0',
+                            name: 'RELEASE_VERSION')
+                        ]
+                    )
                 }
-                // input(message: 'Con que número de version se hace el release?',
-                //     ok: 'Build',
-                //     parameters: [
-                //         string(defaultValue: ' ',
-                //         description: 'Version ej: 1.0.0',
-                //         name: 'RELEASE_VERSION')
-                //     ]
-                // )
                 sh "sbt release release-version $RELEASE_VERSION with-defaults"
             }
         }
