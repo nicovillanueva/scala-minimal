@@ -33,7 +33,9 @@ pipeline {
         stage('Testing & analysing') {
             steps {
                 withSonarQubeEnv('Sonar') {
-                    sh "sbt clean coverage test"
+                    ansiColor('xterm') {
+                        sh "sbt clean coverage test"
+                    }
                 }
             }
         }
@@ -46,7 +48,9 @@ pipeline {
                 }
             }
             steps {
-                sh "sbt coverageReport coverageAggregate sonar"
+                ansiColor('xterm') {
+                    sh "sbt coverageReport coverageAggregate sonar"
+                }
                 script {
                     timeout(time: 1, unit: 'HOURS') {
                         def qg = waitForQualityGate()
