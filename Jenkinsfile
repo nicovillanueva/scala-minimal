@@ -6,7 +6,6 @@ def notifyBuild(String event, String result = null) {
     httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
     {
         "project": "${JOB_NAME}",
-        "branch": "${BRANCH_NAME}",
         "result": "${result != null ? result : "-"}",
         "phase": "${event}",
         "build_url": "${BUILD_URL}"
@@ -129,7 +128,6 @@ pipeline {
             httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
             {
                 "project": "${JOB_NAME}",
-                "branch": "${BRANCH_NAME}",
                 "result": "${result != null ? result : "-"}",
                 "phase": "finished",
                 "build_url": "${BUILD_URL}"
