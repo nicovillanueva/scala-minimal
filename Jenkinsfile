@@ -13,6 +13,10 @@ def notifyBuild(String event, String result = null) {
     """)
 }
 
+def notifyPr() {
+
+}
+
 pipeline {
     agent {
         docker {
@@ -38,7 +42,7 @@ pipeline {
                 changeRequest()
             }
             steps {
-                notifyBuild "propen"
+                // notifyBuild "propen"
             }
         }
 
@@ -108,9 +112,20 @@ pipeline {
             }
         }
     }
+
     post {
         always {
-            notifyBuild "finished" "${currentBuild.currentResult}"
+            // notifyBuild "finished" "${currentBuild.currentResult}"
+
+            httpRequest(url: "${botUrl}", acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+            {
+                "project": "${JOB_NAME}",
+                "branch": "${BRANCH_NAME}",
+                "result": "${result != null ? result : "-"}",
+                "phase": "finished",
+                "build_url": "${BUILD_URL}"
+            }
+            """)
         }
     }
 }
