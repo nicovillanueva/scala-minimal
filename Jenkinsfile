@@ -133,7 +133,7 @@ pipeline {
             httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
             {
                 "project": "${JOB_NAME}",
-                "result": "${result != null ? result : "-"}",
+                "result": "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
                 "phase": "finished",
                 "build_url": "${BUILD_URL}"
             }
