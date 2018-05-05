@@ -1,6 +1,7 @@
 #!/usr/bin/env groovy
 
-def botUrl = "http://decidir2bobthebot.marathon.l4lb.thisdcos.directory:8888/notify"
+botUrl = "http://decidir2bobthebot.marathon.l4lb.thisdcos.directory:8888/notify" // Global
+
 def notifyBuild(String event, String result = null) {
     httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
     {
