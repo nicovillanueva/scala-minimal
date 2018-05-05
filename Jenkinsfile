@@ -105,16 +105,19 @@ pipeline {
                 branch "master"
             }
             steps {
-                timeout(time: 1, unit: 'DAYS') {
-                    notifyBuild "waiting"
-                    input(message: 'Con que número de version se hace el release?',
-                        ok: 'Build',
-                        parameters: [
-                            string(defaultValue: ' ',
-                            description: 'Version ej: 1.0.0',
-                            name: 'RELEASE_VERSION')
-                        ]
-                    )
+                lock(resource: 'commons-release', inversePrecedence: true) {
+                    timeout(time: 1, unit: 'DAYS') {
+                        notifyBuild "waiting"
+                        input(message: 'Con que número de version se hace el release?',
+                            ok: 'Build',
+                            parameters: [
+                                string(defaultValue: ' ',
+                                description: 'Version ej: 1.0.0',
+                                name: 'RELEASE_VERSION')
+                            ]
+                        )
+                        milestone()
+                    }
                 }
                 ansiColor('xterm') {
                     sh "sbt release release-version $RELEASE_VERSION with-defaults"
