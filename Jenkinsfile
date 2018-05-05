@@ -2,6 +2,17 @@
 
 def botUrl = "http://decidir2bobthebot.marathon.l4lb.thisdcos.directory:8888/notify"
 def projectName = "scala-minimal-test"
+def notifyBot(String event, String result = null) {
+    httpRequest(url: "${botUrl}", acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+    {
+        "project": "${JOB_BASE_NAME}",
+        "branch": "${BRANCH_NAME}",
+        "result": "${result != null ? result : "-"}",
+        "event": "${event}",
+        "build_url": "${BUILD_URL}"
+    }
+    """)
+}
 
 pipeline {
     agent {
@@ -19,14 +30,7 @@ pipeline {
     stages {
         stage('Notifying') {
             steps {
-                httpRequest(url: "${botUrl}", acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
-                {
-                    "project": "${projectName}",
-                    "branch": "${BRANCH_NAME}",
-                    "result": "-",
-                    "event": "started"
-                }
-                """)
+                notifyBot "started"
             }
         }
 
@@ -64,24 +68,25 @@ pipeline {
         }
 
 
-        stage('Validate PR'){
-            when {
-                changeRequest()  // bug: not working
-            }
-            steps {
-                // echo "[DRYRUN] fetch & merge to master"
-                echo "Test after merge:"
-                sh "sbt clean test"
-            }
-        }
+        // stage('Validate PR'){
+        //     when {
+        //         changeRequest()
+        //     }
+        //     steps {
+        //         // echo "[DRYRUN] fetch & merge to master"
+        //         echo "Test after merge:"
+        //         sh "sbt clean test"
+        //     }
+        // }
 
         stage('New snapshot'){
             when {
                 branch "develop"
             }
             steps {
-                sh "sbt publishSnapshot"
-
+                ansiColor('xterm') {
+                    sh "sbt publishSnapshot"
+                }
                 // input(message: "Deployar a Desa?")
                 // lock('desa-deployment') {
                 //     milestone(label: 'desa-deploy')
@@ -96,6 +101,7 @@ pipeline {
             }
             steps {
                 timeout(time: 1, unit: 'DAYS') {
+                    notifyBot "waiting"
                     input(message: 'Con que número de version se hace el release?',
                         ok: 'Build',
                         parameters: [
@@ -105,24 +111,15 @@ pipeline {
                         ]
                     )
                 }
-                sh "sbt release release-version $RELEASE_VERSION with-defaults"
+                ansiColor('xterm') {
+                    sh "sbt release release-version $RELEASE_VERSION with-defaults"
+                }
             }
         }
     }
     post {
-        changed {
-            // TODO: mail
-            echo "[DRYRUN] changed build"
-        }
         always {
-            httpRequest(url: "${botUrl}", acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
-            {
-                "project": "${projectName}",
-                "branch": "${BRANCH_NAME}",
-                "result": "${currentBuild.currentResult}",
-                "event": "finished"
-            }
-            """)
+            notifyBot "finished" "${currentBuild.currentResult}"
         }
     }
 }
