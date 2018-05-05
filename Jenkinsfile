@@ -116,7 +116,7 @@ pipeline {
                                 name: 'RELEASE_VERSION')
                             ]
                         )
-                        milestone()
+                        milestone label: 'commons-release', ordinal: 1
                     }
                 }
                 ansiColor('xterm') {
