@@ -72,8 +72,10 @@ pipeline {
                 }
             }
             steps {
-                ansiColor('xterm') {
-                    sh "sbt coverageReport coverageAggregate sonar"
+                withSonarQubeEnv('Sonar') {
+                    ansiColor('xterm') {
+                        sh "sbt coverageReport coverageAggregate sonar"
+                    }
                 }
                 script {
                     timeout(time: 1, unit: 'HOURS') {
@@ -123,16 +125,16 @@ pipeline {
 
     post {
         always {
-            // notifyBuild "finished" "${currentBuild.currentResult}"
+            notifyBuild "finished" "${currentBuild.currentResult}"
 
-            httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
-            {
-                "project": "${JOB_NAME}",
-                "result": "${result != null ? result : "-"}",
-                "phase": "finished",
-                "build_url": "${BUILD_URL}"
-            }
-            """)
+            // httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+            // {
+            //     "project": "${JOB_NAME}",
+            //     "result": "${result != null ? result : "-"}",
+            //     "phase": "finished",
+            //     "build_url": "${BUILD_URL}"
+            // }
+            // """)
         }
     }
 }
