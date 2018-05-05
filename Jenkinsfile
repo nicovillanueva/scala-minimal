@@ -1,14 +1,13 @@
 #!/usr/bin/env groovy
 
 def botUrl = "http://decidir2bobthebot.marathon.l4lb.thisdcos.directory:8888/notify"
-def projectName = "scala-minimal-test"
-def notifyBot(String event, String result = null) {
+def notifyBuild(String event, String result = null) {
     httpRequest(url: "${botUrl}", acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
     {
-        "project": "${JOB_BASE_NAME}",
+        "project": "${JOB_NAME}",
         "branch": "${BRANCH_NAME}",
         "result": "${result != null ? result : "-"}",
-        "event": "${event}",
+        "phase": "${event}",
         "build_url": "${BUILD_URL}"
     }
     """)
@@ -30,7 +29,16 @@ pipeline {
     stages {
         stage('Notifying') {
             steps {
-                notifyBot "started"
+                notifyBuild "started"
+            }
+        }
+
+        stage('New PR opened'){
+            when {
+                changeRequest()
+            }
+            steps {
+                notifyBuild "propen"
             }
         }
 
@@ -67,18 +75,6 @@ pipeline {
             }
         }
 
-
-        // stage('Validate PR'){
-        //     when {
-        //         changeRequest()
-        //     }
-        //     steps {
-        //         // echo "[DRYRUN] fetch & merge to master"
-        //         echo "Test after merge:"
-        //         sh "sbt clean test"
-        //     }
-        // }
-
         stage('New snapshot'){
             when {
                 branch "develop"
@@ -87,11 +83,6 @@ pipeline {
                 ansiColor('xterm') {
                     sh "sbt publishSnapshot"
                 }
-                // input(message: "Deployar a Desa?")
-                // lock('desa-deployment') {
-                //     milestone(label: 'desa-deploy')
-                //     echo '[DRYRUN] deploy to desa'
-                // }
             }
         }
 
@@ -101,7 +92,7 @@ pipeline {
             }
             steps {
                 timeout(time: 1, unit: 'DAYS') {
-                    notifyBot "waiting"
+                    notifyBuild "waiting"
                     input(message: 'Con que número de version se hace el release?',
                         ok: 'Build',
                         parameters: [
@@ -119,7 +110,7 @@ pipeline {
     }
     post {
         always {
-            notifyBot "finished" "${currentBuild.currentResult}"
+            notifyBuild "finished" "${currentBuild.currentResult}"
         }
     }
 }
