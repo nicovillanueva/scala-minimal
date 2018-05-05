@@ -2,7 +2,7 @@
 
 def botUrl = "http://decidir2bobthebot.marathon.l4lb.thisdcos.directory:8888/notify"
 def notifyBuild(String event, String result = null) {
-    httpRequest(url: "${botUrl}", acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+    httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
     {
         "project": "${JOB_NAME}",
         "branch": "${BRANCH_NAME}",
@@ -14,7 +14,15 @@ def notifyBuild(String event, String result = null) {
 }
 
 def notifyPr() {
-
+    httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+    {
+        "project": "${JOB_NAME}",
+        "target": "${CHANGE_TARGET}",
+        "changeId": "${CHANGE_ID}",
+        "author": "${CHANGE_AUTHOR}",
+        "changeUrl": "${CHANGE_URL}"
+    }
+    """)
 }
 
 pipeline {
@@ -42,7 +50,7 @@ pipeline {
                 changeRequest()
             }
             steps {
-                // notifyBuild "propen"
+                notifyPr()
             }
         }
 
@@ -117,7 +125,7 @@ pipeline {
         always {
             // notifyBuild "finished" "${currentBuild.currentResult}"
 
-            httpRequest(url: "${botUrl}", acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+            httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
             {
                 "project": "${JOB_NAME}",
                 "branch": "${BRANCH_NAME}",
