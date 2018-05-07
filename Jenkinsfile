@@ -3,7 +3,7 @@
 botUrl = "http://decidir2bobthebot.marathon.l4lb.thisdcos.directory:8888/notify" // Global
 
 def notifyBuild(String event, String result = null) {
-    httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+    httpRequest(url: "${botUrl}/build", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
     {
         "project": "${JOB_NAME}",
         "result": "${result != null ? result : "-"}",
@@ -14,7 +14,7 @@ def notifyBuild(String event, String result = null) {
 }
 
 def notifyPr() {
-    httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+    httpRequest(url: "${botUrl}/pr", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
     {
         "project": "${JOB_NAME}",
         "target": "${CHANGE_TARGET}",
