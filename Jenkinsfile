@@ -133,7 +133,7 @@ pipeline {
         always {
             // notifyBuild "finished" "${currentBuild.currentResult}"
 
-            httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+            httpRequest(url: "${botUrl}/build", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
             {
                 "project": "${JOB_NAME}",
                 "result": "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
