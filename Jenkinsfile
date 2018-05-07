@@ -58,7 +58,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('Sonar') {
                     ansiColor('xterm') {
-                        sh "sbt clean coverage test"
+                        sh "sbt clean coverage test coverageReport coverageAggregate"
                     }
                 }
             }
@@ -74,7 +74,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('Sonar') {
                     ansiColor('xterm') {
-                        sh "sbt coverageReport coverageAggregate sonar"
+                        sh "sbt sonar"
                     }
                 }
                 script {
