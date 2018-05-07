@@ -123,7 +123,7 @@ pipeline {
                     }
                 }
                 ansiColor('xterm') {
-                    sh "sbt release release-version $RELEASE_VERSION with-defaults"
+                    sh "sbt release release-version ${RELEASE_VERSION} with-defaults"
                 }
             }
         }
