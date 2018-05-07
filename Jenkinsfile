@@ -1,7 +1,29 @@
 #!/usr/bin/env groovy
 
-def botUrl = "http://decidir2bobthebot.marathon.l4lb.thisdcos.directory:8888/notify"
-def projectName = "scala-minimal-test"
+botUrl = "http://decidir2bobthebot.marathon.l4lb.thisdcos.directory:8888/notify" // Global
+
+def notifyBuild(String event, String result = null) {
+    httpRequest(url: "${botUrl}/build", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+    {
+        "project": "${JOB_NAME}",
+        "result": "${result != null ? result : "-"}",
+        "phase": "${event}",
+        "build_url": "${BUILD_URL}"
+    }
+    """)
+}
+
+def notifyPr() {
+    httpRequest(url: "${botUrl}/pr", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+    {
+        "project": "${JOB_NAME}",
+        "target": "${CHANGE_TARGET}",
+        "changeId": "${CHANGE_ID}",
+        "author": "${CHANGE_AUTHOR}",
+        "changeUrl": "${CHANGE_URL}"
+    }
+    """)
+}
 
 pipeline {
     agent {
@@ -19,33 +41,42 @@ pipeline {
     stages {
         stage('Notifying') {
             steps {
-                httpRequest(url: "${botUrl}", acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
-                {
-                    "project": "${projectName}",
-                    "branch": "${BRANCH_NAME}",
-                    "result": "-",
-                    "event": "started"
-                }
-                """)
+                notifyBuild "started"
+            }
+        }
+
+        stage('New PR opened'){
+            when {
+                changeRequest()
+            }
+            steps {
+                notifyPr()
             }
         }
 
         stage('Testing & analysing') {
             steps {
                 withSonarQubeEnv('Sonar') {
-                    sh "sbt clean coverage test coverageReport coverageAggregate sonar"
+                    ansiColor('xterm') {
+                        sh "sbt clean coverage test coverageReport coverageAggregate"
+                    }
                 }
             }
         }
 
         stage('Quality gate') {
-            // when {
-            //     anyOf{
-            //         branch 'master'
-            //         branch 'develop'
-            //     }
-            // }
+            when {
+                anyOf{
+                    branch 'master'
+                    branch 'develop'
+                }
+            }
             steps {
+                withSonarQubeEnv('Sonar') {
+                    ansiColor('xterm') {
+                        sh "sbt sonar"
+                    }
+                }
                 script {
                     timeout(time: 1, unit: 'HOURS') {
                         def qg = waitForQualityGate()
@@ -58,62 +89,56 @@ pipeline {
             }
         }
 
-
-        // stage('Validate PR'){
-        //     when {
-        //         changeRequest()  // bug: not working
-        //     }
-        //     steps {
-        //         // echo "[DRYRUN] fetch & merge to master"
-        //         echo "Test after merge:"
-        //         sh "sbt clean test"
-        //     }
-        // }
-
         stage('New snapshot'){
             when {
                 branch "develop"
             }
             steps {
-                sh "sbt publishSnapshot"
-
-                // input(message: "Deployar a Desa?")
-                // lock('desa-deployment') {
-                //     milestone(label: 'desa-deploy')
-                //     echo '[DRYRUN] deploy to desa'
-                // }
+                ansiColor('xterm') {
+                    sh "sbt publishSnapshot"
+                }
             }
         }
 
         stage('New release') {
             when {
-                branch "master"
+                anyOf {
+                    branch "master"
+                    branch "release/*"
+                }
             }
             steps {
-                input(message: 'Con que número de version se hace el release?',
-                    ok: 'Build',
-                    parameters: [
-                        string(defaultValue: ' ',
-                        description: 'Version ej: 1.0.0',
-                        name: 'RELEASE_VERSION')
-                    ]
-                )
-                sh "sbt release release-version $RELEASE_VERSION with-defaults"
+                lock(resource: 'commons-release', inversePrecedence: true) {
+                    timeout(time: 1, unit: 'DAYS') {
+                        notifyBuild "waiting"
+                        input(message: 'Con que número de version se hace el release?',
+                            ok: 'Build',
+                            parameters: [
+                                string(defaultValue: ' ',
+                                description: 'Version ej: 1.0.0',
+                                name: 'RELEASE_VERSION')
+                            ]
+                        )
+                        milestone label: 'commons-release', ordinal: 1
+                    }
+                }
+                ansiColor('xterm') {
+                    sh "sbt release release-version ${RELEASE_VERSION} with-defaults"
+                }
             }
         }
     }
+
     post {
-        changed {
-            // TODO: mail
-            echo "[DRYRUN] changed build"
-        }
         always {
-            httpRequest(url: "${botUrl}", acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+            // notifyBuild "finished" "${currentBuild.currentResult}"
+
+            httpRequest(url: "${botUrl}/build", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
             {
-                "project": "${projectName}",
-                "branch": "${BRANCH_NAME}",
-                "result": "${currentBuild.currentResult}",
-                "event": "finished"
+                "project": "${JOB_NAME}",
+                "result": "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
+                "phase": "finished",
+                "build_url": "${BUILD_URL}"
             }
             """)
         }
