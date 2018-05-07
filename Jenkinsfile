@@ -102,7 +102,10 @@ pipeline {
 
         stage('New release') {
             when {
-                branch "master"
+                anyOf {
+                    branch "master"
+                    branch "release/*"
+                }
             }
             steps {
                 lock(resource: 'commons-release', inversePrecedence: true) {
