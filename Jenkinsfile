@@ -42,10 +42,11 @@ pipeline {
         stage('Notifying') {
             steps {
                 script {
-                    notifyBuild(event: "started",
-                        project: "${JOB_NAME}",
-                        result: "",
-                        buildUrl: "${BUILD_URL}")
+                    // notifyBuild(event: "started",
+                    //     project: "${JOB_NAME}",
+                    //     result: "",
+                    //     buildUrl: "${BUILD_URL}")
+                    notifyBuild "started"
                 }
                 // notifyBuild "started"
             }
@@ -138,10 +139,11 @@ pipeline {
     post {
         always {
             script {
-                notifyBuild(event: "finished",
-                    project: "${JOB_NAME}",
-                    result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
-                    buildUrl: "${BUILD_URL}")
+                notifyBuild "finished"
+                // notifyBuild(event: "finished",
+                //     project: "${JOB_NAME}",
+                //     result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
+                //     buildUrl: "${BUILD_URL}")
             }
             // notifyBuild "finished" "${currentBuild.currentResult}"
 
