@@ -42,7 +42,7 @@ pipeline {
         stage('Notifying') {
             steps {
                 script {
-                    notifyBot.build(event: "started",
+                    notifyBuild(event: "started",
                         project: "${JOB_NAME}",
                         result: "",
                         buildUrl: "${BUILD_URL}")
@@ -58,7 +58,7 @@ pipeline {
             steps {
                 // notifyPr()
                 script {
-                    notifyBot.pullRequest(this.env)
+                    notifyPr(this.env)
                 }
             }
         }
@@ -138,7 +138,7 @@ pipeline {
     post {
         always {
             script {
-                notifyBot.build(event: "finished",
+                notifyBuild(event: "finished",
                     project: "${JOB_NAME}",
                     result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
                     buildUrl: "${BUILD_URL}")
