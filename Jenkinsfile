@@ -41,10 +41,12 @@ pipeline {
     stages {
         stage('Notifying') {
             steps {
-                notifyBot.build(event: "started",
-                    project: "${JOB_NAME}",
-                    result: "",
-                    buildUrl: "${BUILD_URL}")
+                script {
+                    notifyBot.build(event: "started",
+                        project: "${JOB_NAME}",
+                        result: "",
+                        buildUrl: "${BUILD_URL}")
+                }
                 // notifyBuild "started"
             }
         }
@@ -55,7 +57,9 @@ pipeline {
             }
             steps {
                 // notifyPr()
-                notifyBot.pullRequest(this.env)
+                script {
+                    notifyBot.pullRequest(this.env)
+                }
             }
         }
 
@@ -133,10 +137,12 @@ pipeline {
 
     post {
         always {
-            notifyBot.build(event: "finished",
-                project: "${JOB_NAME}",
-                result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
-                buildUrl: "${BUILD_URL}")
+            script {
+                notifyBot.build(event: "finished",
+                    project: "${JOB_NAME}",
+                    result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
+                    buildUrl: "${BUILD_URL}")
+            }
             // notifyBuild "finished" "${currentBuild.currentResult}"
 
             // httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
