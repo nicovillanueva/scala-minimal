@@ -1,29 +1,29 @@
 #!/usr/bin/env groovy
-
-botUrl = "http://decidir2bobthebot.marathon.l4lb.thisdcos.directory:8888/notify" // Global
-
-def notifyBuild(String event, String result = null) {
-    httpRequest(url: "${botUrl}/build", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
-    {
-        "project": "${JOB_NAME}",
-        "result": "${result != null ? result : "-"}",
-        "phase": "${event}",
-        "build_url": "${BUILD_URL}"
-    }
-    """)
-}
-
-def notifyPr() {
-    httpRequest(url: "${botUrl}/pr", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
-    {
-        "project": "${JOB_NAME}",
-        "target": "${CHANGE_TARGET}",
-        "changeId": "${CHANGE_ID}",
-        "author": "${CHANGE_AUTHOR}",
-        "changeUrl": "${CHANGE_URL}"
-    }
-    """)
-}
+//
+// botUrl = "http://decidir2bobthebot.marathon.l4lb.thisdcos.directory:8888/notify" // Global
+//
+// def notifyBuild(String event, String result = null) {
+//     httpRequest(url: "${botUrl}/build", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+//     {
+//         "project": "${JOB_NAME}",
+//         "result": "${result != null ? result : "-"}",
+//         "phase": "${event}",
+//         "build_url": "${BUILD_URL}"
+//     }
+//     """)
+// }
+//
+// def notifyPr() {
+//     httpRequest(url: "${botUrl}/pr", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+//     {
+//         "project": "${JOB_NAME}",
+//         "target": "${CHANGE_TARGET}",
+//         "changeId": "${CHANGE_ID}",
+//         "author": "${CHANGE_AUTHOR}",
+//         "changeUrl": "${CHANGE_URL}"
+//     }
+//     """)
+// }
 
 pipeline {
     agent {
@@ -41,7 +41,11 @@ pipeline {
     stages {
         stage('Notifying') {
             steps {
-                notifyBuild "started"
+                notifyBot.build(event: "started",
+                    project: "${JOB_NAME}",
+                    result: "",
+                    buildUrl: "${BUILD_URL}")
+                // notifyBuild "started"
             }
         }
 
@@ -50,7 +54,8 @@ pipeline {
                 changeRequest()
             }
             steps {
-                notifyPr()
+                // notifyPr()
+                notifyBot.pullRequest(this.env)
             }
         }
 
@@ -128,16 +133,20 @@ pipeline {
 
     post {
         always {
+            notifyBot.build(event: "finished",
+                project: "${JOB_NAME}",
+                result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
+                buildUrl: "${BUILD_URL}")
             // notifyBuild "finished" "${currentBuild.currentResult}"
 
-            httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
-            {
-                "project": "${JOB_NAME}",
-                "result": "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
-                "phase": "finished",
-                "build_url": "${BUILD_URL}"
-            }
-            """)
+            // httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
+            // {
+            //     "project": "${JOB_NAME}",
+            //     "result": "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
+            //     "phase": "finished",
+            //     "build_url": "${BUILD_URL}"
+            // }
+            // """)
         }
     }
 }
