@@ -1,29 +1,4 @@
 #!/usr/bin/env groovy
-//
-// botUrl = "http://decidir2bobthebot.marathon.l4lb.thisdcos.directory:8888/notify" // Global
-//
-// def notifyBuild(String event, String result = null) {
-//     httpRequest(url: "${botUrl}/build", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
-//     {
-//         "project": "${JOB_NAME}",
-//         "result": "${result != null ? result : "-"}",
-//         "phase": "${event}",
-//         "build_url": "${BUILD_URL}"
-//     }
-//     """)
-// }
-//
-// def notifyPr() {
-//     httpRequest(url: "${botUrl}/pr", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
-//     {
-//         "project": "${JOB_NAME}",
-//         "target": "${CHANGE_TARGET}",
-//         "changeId": "${CHANGE_ID}",
-//         "author": "${CHANGE_AUTHOR}",
-//         "changeUrl": "${CHANGE_URL}"
-//     }
-//     """)
-// }
 
 pipeline {
     agent {
@@ -46,7 +21,7 @@ pipeline {
                     //     project: "${JOB_NAME}",
                     //     result: "",
                     //     buildUrl: "${BUILD_URL}")
-                    notifyBuild 'started'
+                    notifyBuild('started')
                 }
                 // notifyBuild "started"
             }
@@ -139,7 +114,7 @@ pipeline {
     post {
         always {
             script {
-                notifyBuild 'finished'
+                notifyBuild('finished')
                 // notifyBuild(event: "finished",
                 //     project: "${JOB_NAME}",
                 //     result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
