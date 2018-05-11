@@ -46,7 +46,7 @@ pipeline {
                     //     project: "${JOB_NAME}",
                     //     result: "",
                     //     buildUrl: "${BUILD_URL}")
-                    notifyBuild "started"
+                    notifyBuild 'started'
                 }
                 // notifyBuild "started"
             }
@@ -139,7 +139,7 @@ pipeline {
     post {
         always {
             script {
-                notifyBuild "finished"
+                notifyBuild 'finished'
                 // notifyBuild(event: "finished",
                 //     project: "${JOB_NAME}",
                 //     result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
