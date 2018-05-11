@@ -17,11 +17,11 @@ pipeline {
         stage('Notifying') {
             steps {
                 script {
-                    // notifyBuild(event: "started",
-                    //     project: "${JOB_NAME}",
-                    //     result: "",
-                    //     buildUrl: "${BUILD_URL}")
-                    notifyBuild('started')
+                    notifyBuild(event: "started",
+                        project: "${JOB_NAME}",
+                        result: "",
+                        buildUrl: "${BUILD_URL}")
+                    // notifyBuild(event: 'started')
                 }
                 // notifyBuild "started"
             }
@@ -34,7 +34,11 @@ pipeline {
             steps {
                 // notifyPr()
                 script {
-                    notifyPr(this.env)
+                    notifyPr(project: "${JOB_NAME}",
+                        targetBranch: "${CHANGE_TARGET}",
+                        changeId: "${CHANGE_ID}",
+                        author: "${CHANGE_AUTHOR}",
+                        changeUrl: "${CHANGE_URL}")
                 }
             }
         }
@@ -114,11 +118,11 @@ pipeline {
     post {
         always {
             script {
-                notifyBuild('finished')
-                // notifyBuild(event: "finished",
-                //     project: "${JOB_NAME}",
-                //     result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
-                //     buildUrl: "${BUILD_URL}")
+                // notifyBuild('finished')
+                notifyBuild(event: "finished",
+                    project: "${JOB_NAME}",
+                    result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
+                    buildUrl: "${BUILD_URL}")
             }
             // notifyBuild "finished" "${currentBuild.currentResult}"
 
