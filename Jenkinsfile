@@ -21,7 +21,7 @@ pipeline {
                     //     project: "${JOB_NAME}",
                     //     result: "",
                     //     buildUrl: "${BUILD_URL}")
-                    notify.build('started')
+                    notifyBuild('started')
                 }
                 // notifyBuild "started"
             }
@@ -34,7 +34,7 @@ pipeline {
             steps {
                 // notifyPr()
                 script {
-                    notify.pr(this.env)
+                    notifyPr(this.env)
                 }
             }
         }
@@ -114,7 +114,7 @@ pipeline {
     post {
         always {
             script {
-                notify.build('finished')
+                notifyBuild('finished')
                 // notifyBuild(event: "finished",
                 //     project: "${JOB_NAME}",
                 //     result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
