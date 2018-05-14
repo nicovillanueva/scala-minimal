@@ -17,7 +17,7 @@ pipeline {
         stage('Notifying') {
             steps {
                 script {
-                    echo notify.build(event: "started",
+                    println notify.build(event: "started",
                         project: "${JOB_NAME}",
                         result: "",
                         buildUrl: "${BUILD_URL}")
@@ -34,7 +34,7 @@ pipeline {
             steps {
                 // notifyPr()
                 script {
-                    echo notify.pr(project: "${JOB_NAME}",
+                    println notify.pr(project: "${JOB_NAME}",
                         targetBranch: "${CHANGE_TARGET}",
                         changeId: "${CHANGE_ID}",
                         author: "${CHANGE_AUTHOR}",
@@ -119,7 +119,7 @@ pipeline {
         always {
             script {
                 // notifyBuild('finished')
-                echo notify.build(event: "finished",
+                println notify.build(event: "finished",
                     project: "${JOB_NAME}",
                     result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
                     buildUrl: "${BUILD_URL}")
