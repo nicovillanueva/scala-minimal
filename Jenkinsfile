@@ -17,13 +17,11 @@ pipeline {
         stage('Notifying') {
             steps {
                 script {
-                    println notify.build(event: "started",
+                    notify.build(event: "started",
                         project: "${JOB_NAME}",
                         result: "",
                         buildUrl: "${BUILD_URL}")
-                    // notifyBuild(event: 'started')
                 }
-                // notifyBuild "started"
             }
         }
 
@@ -32,9 +30,8 @@ pipeline {
                 changeRequest()
             }
             steps {
-                // notifyPr()
                 script {
-                    println notify.pr(project: "${JOB_NAME}",
+                    notify.pr(project: "${JOB_NAME}",
                         targetBranch: "${CHANGE_TARGET}",
                         changeId: "${CHANGE_ID}",
                         author: "${CHANGE_AUTHOR}",
@@ -118,22 +115,11 @@ pipeline {
     post {
         always {
             script {
-                // notifyBuild('finished')
-                println notify.build(event: "finished",
+                notify.build(event: "finished",
                     project: "${JOB_NAME}",
                     result: "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
                     buildUrl: "${BUILD_URL}")
             }
-            // notifyBuild "finished" "${currentBuild.currentResult}"
-
-            // httpRequest(url: "${botUrl}", contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: """
-            // {
-            //     "project": "${JOB_NAME}",
-            //     "result": "${currentBuild.currentResult != null ? currentBuild.currentResult : "-"}",
-            //     "phase": "finished",
-            //     "build_url": "${BUILD_URL}"
-            // }
-            // """)
         }
     }
 }
