@@ -1,5 +1,7 @@
 #!/usr/bin/env groovy
 
+project = "commons"
+
 pipeline {
     agent {
         docker {
@@ -42,11 +44,7 @@ pipeline {
 
         stage('Testing & analysing') {
             steps {
-                withSonarQubeEnv('Sonar') {
-                    ansiColor('xterm') {
-                        sh "sbt clean coverage test"
-                    }
-                }
+                sbt.test()
             }
         }
 
@@ -58,20 +56,7 @@ pipeline {
                 }
             }
             steps {
-                withSonarQubeEnv('Sonar') {
-                    ansiColor('xterm') {
-                        sh "sbt coverageReport coverageAggregate sonar"
-                    }
-                }
-                script {
-                    timeout(time: 1, unit: 'HOURS') {
-                        def qg = waitForQualityGate()
-                        echo "Found status: ${qg.status}"
-                        if (qg.status != 'OK') {
-                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
-                        }
-                    }
-                }
+                sbt.sonar()
             }
         }
 
@@ -80,9 +65,7 @@ pipeline {
                 branch "develop"
             }
             steps {
-                ansiColor('xterm') {
-                    sh "sbt publishSnapshot"
-                }
+                sbt.publishSnapshot()
             }
         }
 
@@ -91,23 +74,7 @@ pipeline {
                 branch "master"
             }
             steps {
-                lock(resource: 'commons-release', inversePrecedence: true) {
-                    timeout(time: 1, unit: 'DAYS') {
-                        notifyBuild "waiting"
-                        input(message: 'Con que número de version se hace el release?',
-                            ok: 'Build',
-                            parameters: [
-                                string(defaultValue: ' ',
-                                description: 'Version ej: 1.0.0',
-                                name: 'RELEASE_VERSION')
-                            ]
-                        )
-                        milestone label: 'commons-release', ordinal: 1
-                    }
-                }
-                ansiColor('xterm') {
-                    sh "sbt release release-version $RELEASE_VERSION with-defaults"
-                }
+                sbt.release "${project}-release"
             }
         }
     }
