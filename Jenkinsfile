@@ -44,7 +44,9 @@ pipeline {
 
         stage('Testing & analysing') {
             steps {
-                sbt.test()
+                script {
+                    sbt.test()
+                }
             }
         }
 
@@ -56,7 +58,9 @@ pipeline {
                 }
             }
             steps {
-                sbt.sonar()
+                script {
+                    sbt.sonar()
+                }
             }
         }
 
@@ -65,7 +69,9 @@ pipeline {
                 branch "develop"
             }
             steps {
-                sbt.publishSnapshot()
+                script {
+                    sbt.publishSnapshot()
+                }
             }
         }
 
@@ -74,7 +80,9 @@ pipeline {
                 branch "master"
             }
             steps {
-                sbt.release "${project}-release"
+                script {
+                    sbt.release "${project}-release"
+                }
             }
         }
     }
